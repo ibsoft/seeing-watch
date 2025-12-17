@@ -1,0 +1,2 @@
+# seeing-watch
+Astronomical Seeing
