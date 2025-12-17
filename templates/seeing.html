@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}Seeing · {{ location }}{% endblock %}
+{% block head %}
+    <meta name="description" content="Astronomical seeing forecast for {{ location }} with jet stream, clouds and seeing indices." />
+{% endblock %}
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-start justify-content-between gap-3 mb-3">
+    <div>
+        <h1 class="fs-2 fw-bold mb-1">Astro Seeing · {{ location }}</h1>
+        <p class="text-muted mb-0">Hourly chart of clouds, arc seconds, bad layers and jet stream sourced from meteoblue.</p>
+        {% if last_updated %}
+            <small class="text-muted">Last refreshed {{ last_updated.strftime('%Y-%m-%d %H:%M %Z') }}</small>
+        {% endif %}
+    </div>
+        <div class="d-flex gap-2 align-items-center">
+            <form action="{{ url_for('refresh_data') }}" method="post">
+                <input type="hidden" name="location" value="{{ current_slug }}">
+                <button class="btn btn-sm btn-glow">Refresh data</button>
+            </form>
+        </div>
+</div>
+<div class="legend d-flex flex-wrap gap-2 mb-4">
+    {% for label, cls in legend %}
+        <span class="legend-chip {{ cls }}">
+            <i class="fas fa-circle"></i> {{ label }}
+        </span>
+    {% endfor %}
+</div>
+<div class="day-switcher mb-3">
+    {% for day in days %}
+        <button class="btn btn-sm btn-outline-light day-btn{% if loop.first %} active{% endif %}"
+                data-day-index="{{ loop.index0 }}">
+            {{ day.label }}
+        </button>
+    {% endfor %}
+</div>
+{% if super_good_slots %}
+    <div class="alert alert-success d-flex align-items-center gap-2">
+        <i class="fas fa-meteor fa-fw"></i>
+        <div>
+            <strong>Super seeing alert!</strong>
+            <p class="mb-0 text-white-50" style="font-size:0.85rem;">{{ super_good_slots|join(', ') }}</p>
+        </div>
+    </div>
+{% endif %}
+<div class="grid-header card card-dark mb-4">
+    <div class="card-body px-3 py-2">
+        <div class="grid-row text-uppercase text-white-50 gy-2">
+            <div class="grid-column">
+                <small>Clouds</small>
+                <div class="grid-sub">Low · Mid · High</div>
+            </div>
+            <div class="grid-column">
+                <small>Arc Sec.</small>
+            </div>
+            <div class="grid-column">
+                <small>Index</small>
+                <div class="grid-sub">1 · 2</div>
+            </div>
+            <div class="grid-column">
+                <small>Jet Stream</small>
+            </div>
+            <div class="grid-column">
+                <small>Bad Layers</small>
+                <div class="grid-sub">Bot · Top · K/100m</div>
+            </div>
+            <div class="grid-column">
+                <small>Ground</small>
+                <div class="grid-sub">Temp · Rel. Hum.</div>
+            </div>
+            <div class="grid-column">
+                <small>Celestial Bodies</small>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="day-views">
+    {% for day in days %}
+        <div class="day-view{% if not loop.first %} inactive{% endif %}" data-day-index="{{ loop.index0 }}">
+            <div class="day-header mb-3">
+                <div>
+                    <p class="day-header-title mb-1">{{ day.label }}</p>
+                    {% if day.meta %}
+                        <p class="day-header-meta mb-0">{{ day.meta }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="legacy-grid table-responsive mb-3">
+                <table class="table table-dark legacy-table mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col"><i class="fas fa-clock"></i></th>
+                            <th scope="col">Low</th>
+                            <th scope="col">Mid</th>
+                            <th scope="col">High</th>
+                            <th scope="col">Arc Sec.</th>
+                            <th scope="col">1</th>
+                            <th scope="col">2</th>
+                            <th scope="col">Jet Stream</th>
+                            <th scope="col">Bot (km)</th>
+                            <th scope="col">Top (km)</th>
+                            <th scope="col">K/100m</th>
+                            <th scope="col">Temp</th>
+                            <th scope="col">Rel. Hum.</th>
+                            <th scope="col">Celestial</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in day.rows %}
+                            <tr class="{{ row.quality_class }}{% if row.super_good %} super-good{% endif %}">
+                                <td>{{ row.hour }}:00</td>
+                                <td>{{ row.cloud_low or '—' }}</td>
+                                <td>{{ row.cloud_mid or '—' }}</td>
+                                <td>{{ row.cloud_high or '—' }}</td>
+                                <td>{{ row.arc_seconds or '—' }}</td>
+                                <td>{{ row.seeing_index_one or '—' }}</td>
+                                <td>{{ row.seeing_index_two or '—' }}</td>
+                                <td class="jet-stream-cell">
+                                    {% if row.jet_stream is not none %}
+                                        <strong>{{ row.jet_stream }}</strong>
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td>{{ row.bad_layer_bottom or '—' }}</td>
+                                <td>{{ row.bad_layer_top or '—' }}</td>
+                                <td>{{ row.bad_layer_gradient or '—' }}</td>
+                                <td>{{ row.temperature or '—' }}</td>
+                                <td>{{ row.humidity or '—' }}</td>
+                                <td>{{ row.celestial }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="row gy-3">
+                {% for row in day.rows %}
+                    <div class="col-12">
+                        <div class="card card-dark hour-card{% if row.super_good %} super-good{% endif %}" data-bs-toggle="tooltip"
+                             data-datetime="{{ row.datetime }}"
+                             title="See: {{ row.arc_seconds or '—' }}, Jet: {{ row.jet_stream or '—' }} m/s">
+                            <div class="card-body row align-items-center g-3">
+                                <div class="col-auto text-center">
+                                    <span class="hour-label">{{ row.hour }}:00</span>
+                                    <small class="text-muted">{{ row.quality_label }}</small>
+                                </div>
+                                <div class="col">
+                                    <div class="quality-pill {{ row.quality_class }}">
+                                        <strong>{{ row.arc_seconds or '—' }}"</strong>
+                                        {% if row.super_good %}
+                                            <span class="super-pill">Super</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-2 col-sm-3">
+                                    <div>
+                                        <small class="text-muted">Clouds</small>
+                                        <div class="cloud-pills mt-1">
+                                            <span title="Low clouds {{ row.cloud_low or '—' }}%">L {{ row.cloud_low or '—' }}%</span>
+                                            <span title="Mid clouds {{ row.cloud_mid or '—' }}%">M {{ row.cloud_mid or '—' }}%</span>
+                                            <span title="High clouds {{ row.cloud_high or '—' }}%">H {{ row.cloud_high or '—' }}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 col-sm-3">
+                                    <div>
+                                        <small class="text-muted">Jet stream</small>
+                                        <p class="mb-0">{{ row.jet_stream or '—' }} m/s</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 col-sm-3">
+                                    <small class="text-muted">Bad layer</small>
+                                    <p class="mb-0">{{ row.bad_layer_bottom or '—' }} - {{ row.bad_layer_top or '—' }} km</p>
+                                    <small class="text-muted">Δ {{ row.bad_layer_gradient or '—' }} K/100m</small>
+                                </div>
+                                <div class="col-md-2 col-sm-3 text-end">
+                                    <small class="text-muted">Ground</small>
+                                    <p class="mb-0">{{ row.temperature or '—' }}°C</p>
+                                    <small class="text-muted">Hum {{ row.humidity or '—' }}%</small>
+                                </div>
+                                <div class="col-12">
+                                    <small class="text-muted">Celestial</small>
+                                    <p class="mb-0 celestial" title="{{ row.celestial }}">{{ row.celestial }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<div class="card card-dark mt-5">
+    <div class="card-body">
+        <h2 class="h5 mb-3">How to read the forecast</h2>
+        <ul class="list-unstyled mb-0 text-white-50">
+            <li class="mb-2"><i class="fas fa-circle-notch me-2 text-primary"></i>Dark blue around clouds = low cover; green seeing pills and jet stream numbers mean stable skies.</li>
+            <li class="mb-2"><i class="fas fa-meteor me-2 text-success"></i>Seeing indexes 1 &amp; 2 range from 1 (poor) to 5 (excellent) based on atmospheric turbulence.</li>
+            <li class="mb-2"><i class="fas fa-cloud-meatball me-2 text-info"></i>Cloud columns reflect 0% (deep navy) to 100% (white); fog/low clouds are omitted.</li>
+            <li class="mb-2"><i class="fas fa-wind me-2 text-warning"></i>Jet stream speeds above ~20 m/s often degrade seeing quality.</li>
+            <li class="mb-2"><i class="fas fa-layer-group me-2 text-danger"></i>Bad layers show where temperature gradients exceed 0.5 K/100 m; both the base and top heights help you spot turbulence.</li>
+            <li class="mb-2"><i class="fas fa-star me-2 text-secondary"></i>Celestial acronyms (LMVMJSUNP) = Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto.</li>
+            <li><i class="fas fa-crosshairs me-2 text-muted"></i>Hover over the celestial column to see Az/Alt/RA/Dec for the listed bodies.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+[Unit]
+Description=Seeing Dashboard Flask app
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/seeing
+ExecStart=/opt/seeing/.venv/bin/python -m flask --app app run --host 0.0.0.0 --port 8701
+Restart=always
+RestartSec=5
+Environment=FLASK_ENV=production
+Environment=PATH=/opt/seeing/.env/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+Environment=PYTHONUNBUFFERED=1
+# Update User/Group to the unprivileged account that should own the process.
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Home · Seeing Dashboard{% endblock %}
+{% block content %}
+<div class="text-center mb-5">
+    <p class="lead">Night-sky ready insights for <strong>{{ location }}</strong>.</p>
+    <h1 class="display-5 fw-bold">Track the best eyes on {{ location }}</h1>
+    <p class="text-muted">See the latest meteoblue-based forecast for cloud layers, seeing indices,
+        jet streams, and more without leaving your scope.</p>
+    <form action="{{ url_for('seeing') }}" method="get" class="row g-3 justify-content-center mt-3">
+        <div class="col-auto">
+            <label for="location-select" class="visually-hidden">Select location</label>
+            <select id="location-select" name="location" class="form-select form-select-lg bg-transparent text-white border-light">
+                {% for slug, info in locations.items() %}
+                    <option value="{{ slug }}" {% if slug == default_location %}selected{% endif %}>
+                        {{ info.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-glow btn-lg">Open Seeing Grid</button>
+        </div>
+    </form>
+</div>
+<div class="row gy-4">
+    <div class="col-md-4">
+        <div class="card card-dark h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-globe"></i> Pinpoint location focus</h5>
+                <p class="card-text">Peristeri, Greece is presented with Athens timezone-aware hints to plan your observing run.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-dark h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-microscope"></i> Seeing intelligence</h5>
+                <p class="card-text">Arc-second, jet stream, bad layer heights and humidity sit together in a responsive grid.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-dark h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-sync-alt"></i> Manual refresh</h5>
+                <p class="card-text">Hit the refresh button on the grid page to pull the latest meteoblue snapshot safely.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-5">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="h5 mb-0">Available locations</h2>
+        <small class="text-muted">Jump straight into any seeing grid</small>
+    </div>
+    <div class="row gy-3">
+        {% for slug, info in locations.items() %}
+            <div class="col-12 col-sm-6 col-md-3">
+                <a href="{{ url_for('seeing', location=slug) }}" class="text-decoration-none">
+                    <div class="card card-dark h-100 border-1 border-light">
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title mb-2">{{ info.name }}</h6>
+                            <p class="card-text text-muted mb-3">{{ info.timezone }}</p>
+                            <span class="btn btn-sm btn-outline-light mt-auto align-self-start">Open grid</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Seeing Dashboard{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#040b1f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon.svg') }}">
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-night text-light" data-sw-url="{{ url_for('static', filename='sw.js') }}">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Main navigation">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('home') }}">
+            <i class="fas fa-meteor"></i> Seeing Watch
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
+                aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-1" href="{{ url_for('home') }}">
+                        <span class="fas fa-home"></span>
+                        Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-1" href="{{ url_for('seeing') }}">
+                        <span class="fas fa-th"></span>
+                        Seeing Grid
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-link nav-link px-2 d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#aboutModal">
+                        <span class="fas fa-info-circle"></span>
+                        About
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<main class="min-vh-100">
+    <div class="container-fluid px-lg-5 py-5 main-wrapper">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="toast-container position-fixed top-0 end-0 p-3">
+                    {% for category, message in messages %}
+                        <div class="toast align-items-center text-bg-{{ 'danger' if category == 'danger' else 'success' }} border-0"
+                             role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="d-flex position-relative">
+                                <div class="toast-body">
+                                    {{ message }}
+                                </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="toast-progress"></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+</main>
+<footer class="text-center text-muted py-4">
+    <p class="mb-1">Designed for amateur astronomers · Source: meteoblue</p>
+    <small><a class="text-decoration-none text-muted" href="https://meteoblue.com" target="_blank">meteoblue.com</a></small>
+</footer>
+<div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content bg-dark text-light border-light">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title" id="aboutModalLabel">Seeing Watch</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Ioannis A. Bouhras · Version 1.0.0</p>
+                <p class="text-white-50">Realtime-style dashboard powered by meteoblue HTML scraping, serving color-coded seeing forecasts with a dark, night-sky friendly UI.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/seeing.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

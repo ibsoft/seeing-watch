@@ -1,0 +1,29 @@
+{
+  "name": "Seeing Watch",
+  "short_name": "Seeing",
+  "description": "Night-friendly meteoblue seeing grids for various Greek locations.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#040b1f",
+  "theme_color": "#040b1f",
+  "icons": [
+    {
+      "src": "/static/icons/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/static/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/static/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
